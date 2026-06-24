@@ -1,11 +1,11 @@
 # Values for the NotesOps app. CI bumps backend.image.tag / frontend.image.tag.
-# Replace <ACCOUNT_ID> with your AWS account ID (or template via Argo CD params).
+# Replace 029289898229 with your AWS account ID (or template via Argo CD params).
 
 namespace: notesapp
 
 backend:
   image:
-    repository: <ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/notesops/notes-backend
+    repository: 029289898229.dkr.ecr.us-east-1.amazonaws.com/notesops/notes-backend
     tag: latest
   replicas: 2
   resources:
@@ -14,7 +14,7 @@ backend:
 
 frontend:
   image:
-    repository: <ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/notesops/notes-frontend
+    repository: 029289898229.dkr.ecr.us-east-1.amazonaws.com/notesops/notes-frontend
     tag: latest
   replicas: 2
   resources:
