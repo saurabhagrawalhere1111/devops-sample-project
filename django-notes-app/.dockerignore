@@ -1,0 +1,33 @@
+# VCS / CI
+.git
+.gitignore
+.github
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+
+# Local data / secrets — never bake into the image
+.env
+*.sqlite3
+db.sqlite3
+data/
+
+# Node (frontend build happens in its own stage)
+mynotes/node_modules/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Docs / infra (not needed in the app image)
+*.md
+docs/
+infra/
+gitops/

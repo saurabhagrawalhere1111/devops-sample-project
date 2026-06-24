@@ -1,0 +1,61 @@
+# Local dev parity with the cluster: Postgres + backend (gunicorn) + frontend (nginx).
+#   docker compose up --build
+#   open http://localhost:8080
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: notes_db
+    environment:
+      POSTGRES_DB: notesdb
+      POSTGRES_USER: notes
+      POSTGRES_PASSWORD: notes
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U notes -d notesdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks: [notes-net]
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: notes-backend:local
+    container_name: notes_backend
+    environment:
+      DJANGO_SECRET_KEY: local-dev-secret
+      DJANGO_DEBUG: "true"
+      DJANGO_ALLOWED_HOSTS: "*"
+      DJANGO_CORS_ALLOW_ALL: "true"
+      DB_ENGINE: postgres
+      DB_NAME: notesdb
+      DB_USER: notes
+      DB_PASSWORD: notes
+      DB_HOST: db
+      DB_PORT: "5432"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: always
+    networks: [notes-net]
+
+  frontend:
+    build:
+      context: ./mynotes
+      dockerfile: Dockerfile
+    image: notes-frontend:local
+    container_name: notes_frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    restart: always
+    networks: [notes-net]
+
+volumes:
+  pgdata:
+
+networks:
+  notes-net:
