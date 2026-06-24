@@ -195,7 +195,9 @@ jobs:
         env:
           TAG: ${{ needs.build-push.outputs.image_tag }}
         run: |
-          sudo apt-get update && sudo apt-get install -y yq
+          # Install mikefarah/yq (Go) — preserves comments; NOT the apt python yq.
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
           F=gitops/apps/notesapp/values.yaml
           yq -i ".backend.image.tag = \"$TAG\"" "$F"
           yq -i ".frontend.image.tag = \"$TAG\"" "$F"
