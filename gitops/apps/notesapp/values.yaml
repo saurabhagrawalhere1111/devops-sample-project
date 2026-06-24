@@ -1,45 +1,39 @@
 # Values for the NotesOps app. CI bumps backend.image.tag / frontend.image.tag.
-# Replace 029289898229 with your AWS account ID (or template via Argo CD params).
+# Replace <ACCOUNT_ID> with your AWS account ID (or template via Argo CD params).
 
 namespace: notesapp
-
 backend:
   image:
-    repository: 029289898229.dkr.ecr.us-east-1.amazonaws.com/notesops/notes-backend
-    tag: latest
+    repository: <ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/notesops/notes-backend
+    tag: sha-c46a31a2fddf
   replicas: 2
   resources:
-    requests: { cpu: 100m, memory: 256Mi }
-    limits: { cpu: 500m, memory: 512Mi }
-
+    requests: {cpu: 100m, memory: 256Mi}
+    limits: {cpu: 500m, memory: 512Mi}
 frontend:
   image:
-    repository: 029289898229.dkr.ecr.us-east-1.amazonaws.com/notesops/notes-frontend
-    tag: latest
+    repository: <ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/notesops/notes-frontend
+    tag: sha-c46a31a2fddf
   replicas: 2
   resources:
-    requests: { cpu: 50m, memory: 64Mi }
-    limits: { cpu: 200m, memory: 128Mi }
-
+    requests: {cpu: 50m, memory: 64Mi}
+    limits: {cpu: 200m, memory: 128Mi}
 # Synced from AWS Secrets Manager by External Secrets (Phase 5).
 externalSecret:
   enabled: true
   secretStoreRef: aws-secrets-manager
-  remoteKey: notesops-dev/app   # Secrets Manager secret name
-
+  remoteKey: notesops-dev/app # Secrets Manager secret name
 ingress:
   enabled: true
-  host: notes.example.com       # set to your Route53 domain
+  host: notes.example.com # set to your Route53 domain
   className: alb
   # ACM cert ARN for HTTPS on the ALB
   certificateArn: ""
-
 autoscaling:
   enabled: true
   minReplicas: 2
   maxReplicas: 6
   targetCPUUtilizationPercentage: 70
-
 # Emit a ServiceMonitor so kube-prometheus-stack scrapes /metrics (Phase 6).
 metrics:
   serviceMonitor:
