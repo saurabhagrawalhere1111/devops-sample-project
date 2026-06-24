@@ -1,0 +1,19 @@
+Outputs:
+
+ai_agent_role_arn = "arn:aws:iam::029289898229:role/notesops-dev-ai-agent"
+alb_controller_role_arn = "arn:aws:iam::029289898229:role/notesops-dev-alb-controller"
+app_secret_arn = "arn:aws:secretsmanager:us-east-1:029289898229:secret:notesops-dev/app-pTINC4"
+app_secret_name = "notesops-dev/app"
+cluster_endpoint = "https://A145CBC89334E452F662F9D52AADF901.gr7.us-east-1.eks.amazonaws.com"
+cluster_name = "notesops-dev-eks"
+configure_kubectl = "aws eks update-kubeconfig --region us-east-1 --name notesops-dev-eks"
+ecr_repository_urls = {
+  "notes-backend" = "029289898229.dkr.ecr.us-east-1.amazonaws.com/notesops/notes-backend"
+  "notes-frontend" = "029289898229.dkr.ecr.us-east-1.amazonaws.com/notesops/notes-frontend"
+}
+external_secrets_role_arn = "arn:aws:iam::029289898229:role/notesops-dev-external-secrets"
+github_ci_role_arn = "arn:aws:iam::029289898229:role/notesops-dev-github-ci"
+oidc_provider_arn = "arn:aws:iam::029289898229:oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/A145CBC89334E452F662F9D52AADF901"
+rds_endpoint = "notesops-dev-postgres.cqny86q6glwo.us-east-1.rds.amazonaws.com"
+region = "us-east-1"
+vpc_id = "vpc-06d46b6c869ee3082"

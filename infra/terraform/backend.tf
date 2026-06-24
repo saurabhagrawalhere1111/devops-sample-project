@@ -3,10 +3,10 @@
 #   terraform init -migrate-state
 terraform {
   backend "s3" {
-    # bucket         = "notesops-tfstate-<YOUR_ACCOUNT_ID>"   # from bootstrap output
-    # key            = "platform/terraform.tfstate"
-    # region         = "us-east-1"
-    # dynamodb_table = "notesops-tflock"
-    # encrypt        = true
+      bucket         = "notesops-tfstate-029289898229"   # from bootstrap output
+      key            = "platform/terraform.tfstate"
+      region         = "us-east-1"
+      dynamodb_table = "notesops-tflock"
+      encrypt        = true
   }
 }
