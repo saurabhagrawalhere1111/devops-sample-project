@@ -76,7 +76,7 @@ jobs:
 
       # Dependency + IaC + filesystem vuln scan (SARIF -> Security tab)
       - name: Trivy filesystem scan
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: fs
           scan-ref: .
@@ -161,7 +161,7 @@ jobs:
 
       # Scan the built images for vulns before we trust them.
       - name: Trivy scan backend image
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ steps.ecr.outputs.registry }}/${{ env.BACKEND_REPO }}:${{ steps.meta.outputs.tag }}
           severity: CRITICAL,HIGH
