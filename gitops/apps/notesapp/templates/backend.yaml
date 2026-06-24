@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notes-backend
+  namespace: {{ .Values.namespace }}
+  labels: { app: notes-backend }
+spec:
+  replicas: {{ .Values.backend.replicas }}
+  selector:
+    matchLabels: { app: notes-backend }
+  template:
+    metadata:
+      labels: { app: notes-backend }
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile: { type: RuntimeDefault }
+      containers:
+        - name: backend
+          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
+          ports:
+            - containerPort: 8000
+          # All runtime config/secrets come from the synced K8s Secret.
+          envFrom:
+            - secretRef:
+                name: notesapp-secret
+          env:
+            - name: DJANGO_DEBUG
+              value: "false"
+            - name: DJANGO_ALLOWED_HOSTS
+              value: "{{ .Values.ingress.host }},localhost,127.0.0.1"
+          livenessProbe:
+            httpGet: { path: /livez, port: 8000 }
+            initialDelaySeconds: 20
+            periodSeconds: 15
+          readinessProbe:
+            httpGet: { path: /readyz, port: 8000 }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources: {{- toYaml .Values.backend.resources | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities: { drop: ["ALL"] }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notes-backend
+  namespace: {{ .Values.namespace }}
+  labels: { app: notes-backend }
+spec:
+  selector: { app: notes-backend }
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000

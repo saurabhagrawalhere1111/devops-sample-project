@@ -1,0 +1,46 @@
+# Values for the NotesOps app. CI bumps backend.image.tag / frontend.image.tag.
+# Replace <ACCOUNT_ID> with your AWS account ID (or template via Argo CD params).
+
+namespace: notesapp
+
+backend:
+  image:
+    repository: <ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/notesops/notes-backend
+    tag: latest
+  replicas: 2
+  resources:
+    requests: { cpu: 100m, memory: 256Mi }
+    limits: { cpu: 500m, memory: 512Mi }
+
+frontend:
+  image:
+    repository: <ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/notesops/notes-frontend
+    tag: latest
+  replicas: 2
+  resources:
+    requests: { cpu: 50m, memory: 64Mi }
+    limits: { cpu: 200m, memory: 128Mi }
+
+# Synced from AWS Secrets Manager by External Secrets (Phase 5).
+externalSecret:
+  enabled: true
+  secretStoreRef: aws-secrets-manager
+  remoteKey: notesops-dev/app   # Secrets Manager secret name
+
+ingress:
+  enabled: true
+  host: notes.example.com       # set to your Route53 domain
+  className: alb
+  # ACM cert ARN for HTTPS on the ALB
+  certificateArn: ""
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70
+
+# Emit a ServiceMonitor so kube-prometheus-stack scrapes /metrics (Phase 6).
+metrics:
+  serviceMonitor:
+    enabled: true

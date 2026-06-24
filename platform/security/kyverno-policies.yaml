@@ -1,0 +1,67 @@
+# Kyverno admission policies — enforce a security baseline cluster-wide.
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-privileged
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: no-privileged-containers
+      match:
+        any:
+          - resources: { kinds: ["Pod"] }
+      validate:
+        message: "Privileged containers are not allowed."
+        pattern:
+          spec:
+            =(securityContext):
+              =(privileged): "false"
+            containers:
+              - =(securityContext):
+                  =(privileged): "false"
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-resource-limits
+spec:
+  validationFailureAction: Audit   # start in Audit, flip to Enforce once clean
+  rules:
+    - name: require-limits
+      match:
+        any:
+          - resources: { kinds: ["Pod"] }
+      validate:
+        message: "CPU and memory limits are required."
+        pattern:
+          spec:
+            containers:
+              - resources:
+                  limits:
+                    memory: "?*"
+                    cpu: "?*"
+---
+# Only allow images from our ECR registry that are cosign-signed (supply chain).
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: verify-image-signatures
+spec:
+  validationFailureAction: Audit   # flip to Enforce after verifying CI signing works
+  webhookTimeoutSeconds: 30
+  rules:
+    - name: verify-ecr-signed
+      match:
+        any:
+          - resources: { kinds: ["Pod"] }
+      verifyImages:
+        - imageReferences:
+            - "*.dkr.ecr.*.amazonaws.com/notesops/*"
+          attestors:
+            - entries:
+                - keyless:
+                    # Keyless cosign: image must be signed by the GitHub Actions identity.
+                    subject: "https://github.com/saurabhagrawalhere1111/devops-sample-project/*"
+                    issuer: "https://token.actions.githubusercontent.com"

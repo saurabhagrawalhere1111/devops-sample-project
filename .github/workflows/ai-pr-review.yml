@@ -1,0 +1,56 @@
+name: AI PR Review
+
+# Posts an automated Claude code review on every pull request.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write   # for AWS OIDC -> Bedrock
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_CI_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: Get PR diff
+        run: git diff origin/${{ github.base_ref }}...HEAD > pr.diff
+
+      - name: Claude review via Bedrock
+        env:
+          BEDROCK_MODEL_ID: us.anthropic.claude-opus-4-8
+        run: |
+          pip install boto3
+          python - <<'PY'
+          import json, os, boto3, pathlib
+          diff = pathlib.Path("pr.diff").read_text()[:60000]  # cap context
+          br = boto3.client("bedrock-runtime", region_name="us-east-1")
+          body = {
+            "anthropic_version": "bedrock-2023-05-31",
+            "max_tokens": 2000,
+            "system": "You are a senior reviewer. Review this PR diff for bugs, "
+                      "security issues, and clarity. Be concise; cite file:line. "
+                      "If it looks good, say so briefly.",
+            "messages": [{"role": "user", "content": f"Review this diff:\n\n{diff}"}],
+          }
+          r = br.invoke_model(modelId=os.environ["BEDROCK_MODEL_ID"], body=json.dumps(body))
+          out = json.loads(r["body"].read())
+          text = "".join(b.get("text","") for b in out["content"] if b.get("type")=="text")
+          pathlib.Path("review.md").write_text(text)
+          PY
+
+      - name: Post review comment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh pr comment "${{ github.event.pull_request.number }}" --body-file review.md

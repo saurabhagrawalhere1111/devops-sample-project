@@ -1,0 +1,25 @@
+# App-of-apps: this single Application manages all child Applications under
+# gitops/argocd/apps/. Apply it once after installing Argo CD; everything else
+# is then managed declaratively via Git.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/saurabhagrawalhere1111/devops-sample-project.git
+    targetRevision: main
+    path: gitops/argocd/apps
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

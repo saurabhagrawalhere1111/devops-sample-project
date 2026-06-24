@@ -1,0 +1,32 @@
+# --- Terraform ---
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+crash.log
+*.tfvars
+!*.tfvars.example
+.terraform.lock.hcl
+override.tf
+override.tf.json
+
+# --- Secrets / env ---
+.env
+*.pem
+*.key
+kubeconfig*
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.sqlite3
+
+# --- Node ---
+node_modules/
+mynotes/build/
+
+# --- OS / editor ---
+.DS_Store
+.vscode/
+.idea/

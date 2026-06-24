@@ -1,0 +1,20 @@
+# Copy to terraform.tfvars and adjust. terraform.tfvars is gitignored.
+
+region             = "us-east-1"
+project            = "notesops"
+environment        = "dev"
+kubernetes_version = "1.30"
+
+# --- Cost-conscious demo (current defaults) ---
+node_instance_types = ["t3.medium"]
+node_desired_size   = 2
+node_capacity_type  = "SPOT"
+rds_instance_class  = "db.t3.micro"
+rds_multi_az        = false
+
+# --- Production-like overrides (uncomment) ---
+# node_instance_types = ["m5.large"]
+# node_desired_size   = 3
+# node_capacity_type  = "ON_DEMAND"
+# rds_instance_class  = "db.r6g.large"
+# rds_multi_az        = true

@@ -1,0 +1,58 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: aiops
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ai-agent
+  namespace: aiops
+  annotations:
+    # From: terraform output ai_agent_role_arn  (grants bedrock:InvokeModel via IRSA)
+    eks.amazonaws.com/role-arn: arn:aws:iam::<ACCOUNT_ID>:role/notesops-dev-ai-agent
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-agent
+  namespace: aiops
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: ai-agent }
+  template:
+    metadata:
+      labels: { app: ai-agent }
+    spec:
+      serviceAccountName: ai-agent
+      containers:
+        - name: ai-agent
+          image: <ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/notesops/ai-agent:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: AWS_REGION
+              value: us-east-1
+            - name: BEDROCK_MODEL_ID
+              value: us.anthropic.claude-opus-4-8
+            - name: SLACK_WEBHOOK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: ai-agent-slack
+                  key: webhook-url
+          livenessProbe:
+            httpGet: { path: /healthz, port: 8080 }
+          readinessProbe:
+            httpGet: { path: /healthz, port: 8080 }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-agent
+  namespace: aiops
+spec:
+  selector: { app: ai-agent }
+  ports:
+    - port: 8080
+      targetPort: 8080

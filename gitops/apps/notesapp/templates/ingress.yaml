@@ -1,0 +1,36 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: notes-ingress
+  namespace: {{ .Values.namespace }}
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/healthcheck-path: /healthz
+    {{- if .Values.ingress.certificateArn }}
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80},{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+    alb.ingress.kubernetes.io/certificate-arn: {{ .Values.ingress.certificateArn }}
+    {{- end }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          # API/admin/metrics go to the backend...
+          - path: /api
+            pathType: Prefix
+            backend: { service: { name: notes-backend, port: { number: 8000 } } }
+          - path: /admin
+            pathType: Prefix
+            backend: { service: { name: notes-backend, port: { number: 8000 } } }
+          - path: /metrics
+            pathType: Prefix
+            backend: { service: { name: notes-backend, port: { number: 8000 } } }
+          # ...everything else (the SPA) goes to the frontend.
+          - path: /
+            pathType: Prefix
+            backend: { service: { name: notes-frontend, port: { number: 80 } } }
+{{- end }}
