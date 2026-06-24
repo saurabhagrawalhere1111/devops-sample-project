@@ -7,6 +7,7 @@ on:
   pull_request:
     branches: [main]
     paths: ["django-notes-app/**"]
+  workflow_dispatch: {}   # allows manual runs from the Actions tab
 
 # Keyless AWS auth + cosign keyless signing both need an OIDC token.
 permissions:
