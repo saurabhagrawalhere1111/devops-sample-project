@@ -14,9 +14,14 @@ helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheu
   -f platform/observability/values-kube-prometheus-stack.yaml
 
 # --- Logs (Loki + Promtail) ---
+# loki.isDefault=false: kube-prometheus-stack already registers the default
+# (Prometheus) plus the Loki/Tempo datasources. Without this, loki-stack adds a
+# SECOND default datasource and Grafana refuses to start ("Only one datasource
+# per organization can be marked as default").
 helm upgrade --install loki grafana/loki-stack \
   -n "$NS" \
   --set promtail.enabled=true \
+  --set loki.isDefault=false \
   --set loki.persistence.enabled=true \
   --set loki.persistence.size=10Gi
 
